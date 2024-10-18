@@ -294,6 +294,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.startState = (self.startingPosition, 0) # el 0 corresponde a las corners visitadas
 
     def get_start_state(self):
         """
@@ -301,14 +302,16 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        return self.startState
 
     def is_goal_state(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        # is_goal = state[1] == 4 #Miramos si ya hemos pasado por las 4 esquinas. 
+
+        return state[1] == 15 # En binario 1111
 
     def get_successors(self, state):
         """
@@ -329,8 +332,23 @@ class CornersProblem(search.SearchProblem):
             #   dx, dy = Actions.direction_to_vector(action)
             #   next_x, next_y = int(x + dx), int(y + dy)
             #   hits_wall = self.walls[next_x][next_y]
+            current_position = state[0] 
+            x,y = current_position
+            for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                dx, dy = Actions.direction_to_vector(action)
+                next_x, next_y = int(x + dx), int(y + dy)
+                hits_wall = self.walls[next_x][next_y]
+                corners_visited = state[1]
 
-            "*** YOUR CODE HERE ***"
+                if not hits_wall:
+                    next_pos = (next_x, next_y) 
+                    next_visited = corners_visited
+                    if next_pos in self.corners:
+                        # corners_visited += 1 #Asuminedo que nunca repetimos estados por los que ya hemos pasado
+                        corner_index = self.corners.index(next_pos)
+                        next_visited = corners_visited | (1 << corner_index) #TODO: Solución del GPT para disitinguir que esquinas hemos visitado y cuales no
+                    successor = (next_pos, next_visited), action, 1
+                    successors.append(successor) # TODO: El coste lo dejamos como 1? La heurística se aplica en otro lado no?
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -379,8 +397,20 @@ def corners_heuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    "*** YOUR CODE HERE ***" #TODO: Probablemente podamos usars los "walls" para mejorarlo
+    position = state[0]
+    corners_visited = state[1]
+    pending_corners = set()
+    for i, corner in enumerate(corners):
+        if not (corners_visited & (1 << i)):  # Check if the i-th corner has not been visited
+            pending_corners.append(corner)
+    total_distance = 0
+    while pending_corners: # Damos el valor en función de la distancia al resto de las esquina pendientes
+        dist, nearest_corner = nearest_corner(position, pending_corners)
+        total_distance += dist  
+        position = nearest_corner 
+
+    return total_distance
 
 class AStarCornersAgent(SearchAgent):
     """A SearchAgent for FoodSearchProblem using A* and your food_heuristic"""
