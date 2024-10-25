@@ -133,25 +133,25 @@ def depth_first_search(problem):
     print("Start's successors:", problem.get_successors(problem.get_start_state()))
     """
     "*** YOUR CODE HERE ***"
-    # We get the first node and initialize the stack
+    # Instantiate stack and initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.Stack()
     frontier.push(start_node)
-    # We create a visited set se we avoid having cycles
+
+    # Set to store visited nodes
     visited = set()
     
     while not frontier.is_empty():
         
         current_node = frontier.pop()
-        # If we are in a goal state we return its path
+        # If node is goal state return path to node from start node
         if(problem.is_goal_state(current_node.state)):
             return current_node.get_path()
         
         if(current_node.state not in visited):
             visited.add(current_node.state)
             
-            #Each successor is a tuple of (coord,action,cost)
             successors  = problem.get_successors(current_node.state)
             
             for successor, action, cost in successors:
@@ -159,46 +159,49 @@ def depth_first_search(problem):
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node)
 
-    # If the stack is empty and no goal has been found, return an empty list
+    # No goal found, return empty list
     return []
 
 
 def breadth_first_search(problem):
     """Search the shallowest nodes in the search tree first."""
-    # We get the first node and initialize the queue
+    # Instantiate queue and initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.Queue()
     frontier.push(start_node)
-    # We create a visited set se we avoid having cycles
+
+    # Set to store visited nodes
     visited = set()
     
     while not frontier.is_empty():
         
         current_node = frontier.pop()
-        # If we are in a goal state we return its path
+        # If node is goal state return path to node from start node
         if(problem.is_goal_state(current_node.state)):
             return current_node.get_path()
         
         if(current_node.state not in visited):
             visited.add(current_node.state)
             
-            #Each successor is a tuple of (coord,action,cost)
             successors  = problem.get_successors(current_node.state)
             
             for successor, action, cost in successors:
                 if successor not in visited:
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node)
-    # If the stack is empty and no goal has been found, return an empty list
+    # No goal found, return empty list
     return []
 
 def uniform_cost_search(problem):
     """Search the node of least total cost first."""
+    # Instantiate priority queue and initialize start state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.PriorityQueue()
     frontier.push(start_node, 0)
+
+    # Set to store visited nodes
     visited = set()
     while not frontier.is_empty():        
         current_node = frontier.pop()
@@ -208,13 +211,14 @@ def uniform_cost_search(problem):
             return current_node.get_path()
         
         if(current_node.state not in visited):
-            visited.add(current_node.state)            
+            visited.add(current_node.state)     
             successors  = problem.get_successors(current_node.state)
             
             for successor, action, cost in successors:
-                if successor not in visited:   
+                if successor not in visited:
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node, cost)
+    
     return []  
 
 def null_heuristic(state, problem=None):
