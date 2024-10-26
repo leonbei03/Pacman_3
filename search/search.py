@@ -190,11 +190,13 @@ def breadth_first_search(problem):
                 if successor not in visited:
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node)
+
     # No goal found, return empty list
     return []
 
 def uniform_cost_search(problem):
     """Search the node of least total cost first."""
+    # Instantiate queue and initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.PriorityQueue()
@@ -212,13 +214,17 @@ def uniform_cost_search(problem):
             return current_node.get_path()
 
         successors  = problem.get_successors(current_node.state)
+
         for successor, action, cost in successors:
+            # Compute new cost
             new_cost = cost_so_far[current_state] + cost
+            # Only compute if it has not been visited or its cost is lower than previous one
             if successor not in cost_so_far or new_cost < cost_so_far[successor]:
                 cost_so_far[successor] = new_cost
                 next_node = SearchNode(current_node, (successor, action, new_cost))
                 frontier.push(next_node, new_cost)
 
+    # No goal found, return empty list
     return []
 
 
@@ -256,6 +262,8 @@ def a_star_search(problem, heuristic=null_heuristic):
                     new_cost = g + h # f(n) = g(n) + h(n)
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node, new_cost)
+
+    # No goal found, return empty list
     return []  
 
 # Abbreviations
