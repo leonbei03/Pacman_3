@@ -68,8 +68,8 @@ class SearchAgent(Agent):
     location (1,1)
 
     Options for fn include:
-      depth_first_search or dfs
-      breadth_first_search or bfs
+    depth_first_search or dfs
+    breadth_first_search or bfs
 
 
     Note: You should NOT change any code in SearchAgent
@@ -294,7 +294,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        self.startState = (self.startingPosition, 0) # el 0 corresponde a las corners visitadas
+        self.startState = (self.startingPosition, 0) # We mark the number 0 as the number of corners visited. In binary 0000 were each digit is a corner.
 
     def get_start_state(self):
         """
@@ -309,9 +309,8 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        # is_goal = state[1] == 4 #Miramos si ya hemos pasado por las 4 esquinas. 
 
-        return state[1] == 15 # En binario 1111
+        return state[1] == 15 # In binary 1111, all corners visited
 
     def get_successors(self, state):
         """
@@ -344,11 +343,10 @@ class CornersProblem(search.SearchProblem):
                     next_pos = (next_x, next_y) 
                     next_visited = corners_visited
                     if next_pos in self.corners:
-                        # corners_visited += 1 #Asuminedo que nunca repetimos estados por los que ya hemos pasado
-                        corner_index = self.corners.index(next_pos)
-                        next_visited = corners_visited | (1 << corner_index) #TODO: Solución del GPT para disitinguir que esquinas hemos visitado y cuales no
+                        corner_index = self.corners.index(next_pos) # We ge the binary number position of the corner
+                        next_visited = corners_visited | (1 << corner_index) # We set the digit of the corner visited as 1
                     successor = (next_pos, next_visited), action, 1
-                    successors.append(successor) # TODO: El coste lo dejamos como 1? La heurística se aplica en otro lado no?
+                    successors.append(successor)
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -397,7 +395,7 @@ def corners_heuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***" #TODO: Probablemente podamos usars los "walls" para mejorarlo
+    "*** YOUR CODE HERE ***"
     position = state[0]
     corners_visited = state[1]
     pending_corners = set()
@@ -405,7 +403,7 @@ def corners_heuristic(state, problem):
         if not (corners_visited & (1 << i)):  # Check if the i-th corner has not been visited
             pending_corners.append(corner)
     total_distance = 0
-    while pending_corners: # Damos el valor en función de la distancia al resto de las esquina pendientes
+    while pending_corners: # We give a value depending on the remaining corners
         dist, nearest_corner = nearest_corner(position, pending_corners)
         total_distance += dist  
         position = nearest_corner 
@@ -565,16 +563,16 @@ def food_heuristic(state, problem):
     
     if not food_list:
         return 0
-    # items
+
     max_food_distance = 0
     for food1 in food_list:
-        for food2 in food_list:
+        for food2 in food_list: # We take the maximum distance between dots in a maze with no walls
             dist = util.manhattan_distance(food1, food2)
             if dist > max_food_distance:
                 max_food_distance = dist
 
     min_pacman_to_food = min(util.manhattan_distance(position, food) for food in food_list)
-    return min_pacman_to_food + max_food_distance
+    return min_pacman_to_food + max_food_distance #At maximum we well have to move from the nearest dot from pacman to the most far dot 
 
 
 def simplified_corners_heuristic(state, problem):

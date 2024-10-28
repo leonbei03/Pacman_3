@@ -237,6 +237,7 @@ def null_heuristic(state, problem=None):
 
 def a_star_search(problem, heuristic=null_heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
+    # Instantiate queue and frontier. Initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.PriorityQueue()
@@ -254,7 +255,7 @@ def a_star_search(problem, heuristic=null_heuristic):
         if(current_node.state not in visited):
             visited.add(current_node.state)            
             successors  = problem.get_successors(current_node.state)
-            
+        # We define the h and g functions to define the new cost
             for successor, action, cost in successors:
                 if successor not in visited:   
                     g = current_cost + cost 
