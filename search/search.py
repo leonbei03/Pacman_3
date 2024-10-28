@@ -133,25 +133,25 @@ def depth_first_search(problem):
     print("Start's successors:", problem.get_successors(problem.get_start_state()))
     """
     "*** YOUR CODE HERE ***"
-    # We get the first node and initialize the stack
+    # Instantiate stack and initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.Stack()
     frontier.push(start_node)
-    # We create a visited set se we avoid having cycles
+
+    # Set to store visited nodes
     visited = set()
     
     while not frontier.is_empty():
         
         current_node = frontier.pop()
-        # If we are in a goal state we return its path
+        # If node is goal state return path to node from start node
         if(problem.is_goal_state(current_node.state)):
             return current_node.get_path()
         
         if(current_node.state not in visited):
             visited.add(current_node.state)
             
-            #Each successor is a tuple of (coord,action,cost)
             successors  = problem.get_successors(current_node.state)
             
             for successor, action, cost in successors:
@@ -159,32 +159,31 @@ def depth_first_search(problem):
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node)
 
-    # If the stack is empty and no goal has been found, return an empty list
+    # No goal found, return empty list
     return []
 
 
 def breadth_first_search(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    # We get the first node and initialize the queue
+    # Instantiate queue and initialize starting state and node
     start_state = problem.get_start_state()
     start_node = SearchNode(None, (start_state, None, 0))
     frontier = util.Queue()
     frontier.push(start_node)
-    # We create a visited set se we avoid having cycles
+
+    # Set to store visited nodes
     visited = set()
     
     while not frontier.is_empty():
         
         current_node = frontier.pop()
-        # If we are in a goal state we return its path
+        # If node is goal state return path to node from start node
         if(problem.is_goal_state(current_node.state)):
             return current_node.get_path()
         
         if(current_node.state not in visited):
             visited.add(current_node.state)
             
-            #Each successor is a tuple of (coord,action,cost)
             successors  = problem.get_successors(current_node.state)
             
             for successor, action, cost in successors:
@@ -192,13 +191,42 @@ def breadth_first_search(problem):
                     next_node = SearchNode(current_node, (successor, action, cost))
                     frontier.push(next_node)
 
-    # If the stack is empty and no goal has been found, return an empty list
+    # No goal found, return empty list
     return []
 
 def uniform_cost_search(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raise_not_defined()
+    # Instantiate queue and initialize starting state and node
+    start_state = problem.get_start_state()
+    start_node = SearchNode(None, (start_state, None, 0))
+    frontier = util.PriorityQueue()
+    frontier.push(start_node, 0)
+
+    # Map each node to its accumulated cost
+    cost_so_far = {} 
+    cost_so_far[start_state] = 0
+
+    while not frontier.is_empty():
+        current_node = frontier.pop()
+        current_state = current_node.state
+
+        if problem.is_goal_state(current_state):
+            return current_node.get_path()
+
+        successors  = problem.get_successors(current_node.state)
+
+        for successor, action, cost in successors:
+            # Compute new cost
+            new_cost = cost_so_far[current_state] + cost
+            # Only compute if it has not been visited or its cost is lower than previous one
+            if successor not in cost_so_far or new_cost < cost_so_far[successor]:
+                cost_so_far[successor] = new_cost
+                next_node = SearchNode(current_node, (successor, action, new_cost))
+                frontier.push(next_node, new_cost)
+
+    # No goal found, return empty list
+    return []
+
 
 def null_heuristic(state, problem=None):
     """
@@ -209,8 +237,35 @@ def null_heuristic(state, problem=None):
 
 def a_star_search(problem, heuristic=null_heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raise_not_defined()
+    # Instantiate queue and frontier. Initialize starting state and node
+    start_state = problem.get_start_state()
+    start_node = SearchNode(None, (start_state, None, 0))
+    frontier = util.PriorityQueue()
+    frontier.push(start_node, heuristic(start_state, problem))
+    visited = set()
+    
+    while not frontier.is_empty():
+        current_node = frontier.pop()
+        current_state = current_node.state
+        current_cost = current_node.cost
+        
+        if(problem.is_goal_state(current_state)):
+            return current_node.get_path()
+        
+        if(current_node.state not in visited):
+            visited.add(current_node.state)            
+            successors  = problem.get_successors(current_node.state)
+        # We define the h and g functions to define the new cost
+            for successor, action, cost in successors:
+                if successor not in visited:   
+                    g = current_cost + cost 
+                    h = heuristic(successor, problem)
+                    new_cost = g + h # f(n) = g(n) + h(n)
+                    next_node = SearchNode(current_node, (successor, action, cost))
+                    frontier.push(next_node, new_cost)
+
+    # No goal found, return empty list
+    return []  
 
 # Abbreviations
 bfs = breadth_first_search

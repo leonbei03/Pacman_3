@@ -68,8 +68,8 @@ class SearchAgent(Agent):
     location (1,1)
 
     Options for fn include:
-      depth_first_search or dfs
-      breadth_first_search or bfs
+    depth_first_search or dfs
+    breadth_first_search or bfs
 
 
     Note: You should NOT change any code in SearchAgent
@@ -294,6 +294,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.startState = (self.startingPosition, 0) # We mark the number 0 as the number of corners visited. In binary 0000 were each digit is a corner.
 
     def get_start_state(self):
         """
@@ -301,14 +302,15 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        return self.startState
 
     def is_goal_state(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+
+        return state[1] == 15 # In binary 1111, all corners visited
 
     def get_successors(self, state):
         """
@@ -329,8 +331,22 @@ class CornersProblem(search.SearchProblem):
             #   dx, dy = Actions.direction_to_vector(action)
             #   next_x, next_y = int(x + dx), int(y + dy)
             #   hits_wall = self.walls[next_x][next_y]
+            current_position = state[0] 
+            x,y = current_position
+            for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                dx, dy = Actions.direction_to_vector(action)
+                next_x, next_y = int(x + dx), int(y + dy)
+                hits_wall = self.walls[next_x][next_y]
+                corners_visited = state[1]
 
-            "*** YOUR CODE HERE ***"
+                if not hits_wall:
+                    next_pos = (next_x, next_y) 
+                    next_visited = corners_visited
+                    if next_pos in self.corners:
+                        corner_index = self.corners.index(next_pos) # We ge the binary number position of the corner
+                        next_visited = corners_visited | (1 << corner_index) # We set the digit of the corner visited as 1
+                    successor = (next_pos, next_visited), action, 1
+                    successors.append(successor)
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -380,7 +396,19 @@ def corners_heuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    position = state[0]
+    corners_visited = state[1]
+    pending_corners = set()
+    for i, corner in enumerate(corners):
+        if not (corners_visited & (1 << i)):  # Check if the i-th corner has not been visited
+            pending_corners.append(corner)
+    total_distance = 0
+    while pending_corners: # We give a value depending on the remaining corners
+        dist, nearest_corner = nearest_corner(position, pending_corners)
+        total_distance += dist  
+        position = nearest_corner 
+
+    return total_distance
 
 class AStarCornersAgent(SearchAgent):
     """A SearchAgent for FoodSearchProblem using A* and your food_heuristic"""
@@ -531,8 +559,20 @@ def food_heuristic(state, problem):
     problem.heuristic_info['wallCount']
     """
     position, food_grid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    food_list = food_grid.as_list()
+    
+    if not food_list:
+        return 0
+
+    max_food_distance = 0
+    for food1 in food_list:
+        for food2 in food_list: # We take the maximum distance between dots in a maze with no walls
+            dist = util.manhattan_distance(food1, food2)
+            if dist > max_food_distance:
+                max_food_distance = dist
+
+    min_pacman_to_food = min(util.manhattan_distance(position, food) for food in food_list)
+    return min_pacman_to_food + max_food_distance #At maximum we well have to move from the nearest dot from pacman to the most far dot 
 
 
 def simplified_corners_heuristic(state, problem):
