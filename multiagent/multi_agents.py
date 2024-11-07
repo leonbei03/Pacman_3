@@ -168,8 +168,53 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
-    
+        # Get the number of pacman + ghosts
+        num_agents = game_state.get_num_agents()
+        
+        # Maximize the value for Pacman, recursively considering the ghost's moves
+        def max_value(state, depth, agent_index, num_agents):
+            legal_actions = state.get_legal_actions(agent_index)
+            max_eval = -1000
+            best_action = None
+
+            for action in legal_actions:
+                successor = state.generate_successor(agent_index, action)
+                eval = minimax(successor, depth + 1, (agent_index + 1) % num_agents)
+                if eval > max_eval:
+                    max_eval = eval
+                    if depth == 0:  # If it's the root level, set it as the best action
+                        best_action = action
+            if depth == 0:
+                return best_action
+            return max_eval
+
+        # Minimize the value for ghosts, considering Pacman's possible actions
+        def min_value(state, depth, agent_index, num_agents):
+            legal_actions = state.get_legal_actions(agent_index)
+            min_eval = float('inf')
+
+            for action in legal_actions:
+                successor = state.generate_successor(agent_index, action)
+                eval = minimax(successor, depth + 1, (agent_index + 1) % num_agents)
+                min_eval = min(min_eval, eval)
+            return min_eval
+
+        # Start the minimax algorithm from Pacman's turn (index 0)
+        def minimax(state, depth, agent_index):
+            max_depth = num_agents * 4 # num of agents * num of legal actions
+            # If we've reached the maximum depth or a terminal state, evaluate the state
+            if depth == max_depth or state.is_win() or state.is_lose():
+                return self.evaluation_function(state)
+
+            # If it's Pacman's turn (maximizing player)
+            if agent_index == 0:
+                return max_value(state, depth, agent_index, num_agents)
+            else:
+                # If it's a ghost's turn (minimizing player)
+                return min_value(state, depth, agent_index, num_agents)
+        
+        # Start the minimax search with Pacman (agent_index=0) at depth 0
+        return minimax(game_state, 0, 0)    
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -183,6 +228,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raise_not_defined()
 
+        
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
