@@ -28,7 +28,6 @@ class ReflexAgent(Agent):
     headers.
     """
 
-
     def get_action(self, game_state):
         """
         You do not need to change this method, but you're welcome to.
@@ -48,7 +47,7 @@ class ReflexAgent(Agent):
         chosen_index = random.choice(best_indices) # Pick randomly among the best
 
         "Add more of your code here if you want to"
-
+        
         return legal_moves[chosen_index]
 
     def evaluation_function(self, current_game_state, action):
@@ -74,7 +73,40 @@ class ReflexAgent(Agent):
         new_scared_times = [ghostState.scared_timer for ghostState in new_ghost_states]
         
         "*** YOUR CODE HERE ***"
-        return successor_game_state.get_score()
+        # Base score
+        score = successor_game_state.get_score()
+
+        # Food Proximity Reward
+        food_list = new_food.as_list()
+        if food_list:
+            # We take the nearest food since is the one that we want to eat next
+            food_distances = [util.manhattan_distance(new_pos, food) for food in food_list]
+            min_food_distance = min(food_distances)
+            score += 10 / (min_food_distance + 1)
+
+        # Ghost Proximity Penalty
+        for ghost_state, scared_time in zip(new_ghost_states, new_scared_times):
+            ghost_pos = ghost_state.get_position()
+            ghost_distance = util.manhattan_distance(new_pos, ghost_pos)
+
+            if scared_time > 0:
+                # Reward moving closer to edible ghosts (to chase them)
+                score += 30 / (ghost_distance + 1)
+            else:
+                # Apply penalties for proximity to active ghosts
+                if ghost_distance < 2:
+                    score -= 200  # High penalty for very close ghosts
+                elif ghost_distance < 4:
+                    score -= 50 / (ghost_distance + 1)  # Smaller penalty for moderately close ghosts
+
+        # Small penalty for each remaining food item to encourage clearing food
+        score -= 2 * len(food_list)
+
+        # Penalty for STOP action High, discourages inaction
+        if action == Directions.STOP:
+            score -= 50 
+
+        return score
 
 def score_evaluation_function(current_game_state):
     """
