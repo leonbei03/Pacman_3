@@ -579,11 +579,11 @@ def simplified_corners_heuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
 
-      state:   The current search state
-               (a data structure you chose in your search problem)
-               In our case ((x,y), remainingCorners)
+    state:   The current search state
+    (a data structure you chose in your search problem)
+    In our case ((x,y), remainingCorners)
 
-      problem: The CornersProblem instance for this layout.
+    problem: The CornersProblem instance for this layout.
 
     This function should always return a number that is a lower bound on the
     shortest path from the state to a goal of the problem; i.e.  it should be
