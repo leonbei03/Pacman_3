@@ -170,15 +170,21 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         # Get the number of pacman + ghosts
         num_agents = game_state.get_num_agents()
+        # Calculate the maximum depth based on the number of ghosts          
+        max_depth = num_agents * self.depth
         
         # Maximize the value for Pacman, recursively considering the ghost's moves
         def max_value(state, depth, agent_index, num_agents):
             # Return the evaluation of the current state if we have reached a terminal state or max depth since there is no point on keep exploring
-            if state.is_win() or state.is_lose() or depth == self.depth:
+            if state.is_win() or state.is_lose() or depth == max_depth:
                 return self.evaluation_function(state)
             
             max_eval = float('-inf')
             legal_actions = state.get_legal_actions(agent_index)
+            
+            if Directions.STOP in legal_actions:
+                legal_actions.remove(Directions.STOP)
+            
             best_action = None
 
             for action in legal_actions:
@@ -194,7 +200,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Minimize the value for ghosts, considering Pacman's possible actions
         def min_value(state, depth, agent_index, num_agents):
             # Return the evaluation of the current state if we have reached a terminal state or max depth since there is no point on keep exploring
-            if state.is_win() or state.is_lose() or depth == self.depth:
+            if state.is_win() or state.is_lose() or depth == max_depth:
                 return self.evaluation_function(state)
             
             min_eval = float('inf')
@@ -210,12 +216,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # Start the minimax algorithm from Pacman's turn (index 0)
         def minimax(state, depth, agent_index):
             
-            # Calculate the maximum depth based on the number of ghosts
-            num_agents = state.get_num_agents()  # Total number of agents (Pacman + ghosts)
-            self.depth = num_agents * 3
-            
             # If we've reached the maximum depth or a terminal state, evaluate the state 
-            if depth == self.depth or state.is_win() or state.is_lose():
+            if depth == max_depth or state.is_win() or state.is_lose():
                 return self.evaluation_function(state)
 
             # If it's Pacman's turn (maximizing player)
