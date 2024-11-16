@@ -31,6 +31,9 @@ import mdp, util
 from learning_agents import ValueEstimationAgent
 import collections
 
+from reinforcement.pacman import GameState
+
+
 class ValueIterationAgent(ValueEstimationAgent):
     """
         * Please read learning_agents.py before reading this.*
@@ -65,7 +68,21 @@ class ValueIterationAgent(ValueEstimationAgent):
           Run the value iteration algorithm. Note that in standard
           value iteration, V_k+1(...) depends on V_k(...)'s.
         """
-        "*** YOUR CODE HERE ***"
+        states = self.mdp.get_states()
+        for i in range(self.iterations):
+            new_values = self.values.copy()
+            for state in states:
+
+                actions = self.mdp.get_possible_actions(state)
+                if not actions:
+                    self.values[state] = 0
+                else:
+                    maximum = float('-inf')
+                    for action in actions:
+                        q_value = self.get_q_value(state,action)
+                        maximum = max(q_value, maximum)
+                    new_values[state] = maximum
+            self.values = new_values
             
     def get_value(self, state):
         """
@@ -73,13 +90,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         return self.values[state]
 
-    def compute_q_value_from_values(self, state, action):
+    def compute_q_value_from_values(self, state: GameState, action):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        q_value = 0
+        state_and_probs = self.mdp.get_transition_states_and_probs(state,action)
+        for next_state, prob in state_and_probs:
+            reward = self.mdp.get_reward(state, action, next_state)
+            q_value += prob * (reward + self.discount * self.get_value(next_state))
+        return q_value
 
     def compute_action_from_values(self, state):
         """
@@ -91,7 +112,15 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raise_not_defined()
+        actions = self.mdp.get_possible_actions(state)
+        best_move = None
+        maximum = float('-inf')
+        for action in actions:
+            value = self.get_q_value(state, action)
+            if value >= maximum:
+                maximum = value
+                best_move = action
+        return best_move
 
     def get_policy(self, state):
         return self.compute_action_from_values(state)
